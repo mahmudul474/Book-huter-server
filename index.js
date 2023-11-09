@@ -45,6 +45,15 @@ async function connectToMongoDB() {
       }
     });
 
+    app.get("/allbooks", async (req, res) => {
+      try {
+        const books = await bookCollection.find({}).toArray();
+        res.status(200).json(books);
+      } catch (error) {
+        res.status(500).json({ error: "Internal server error" });
+      }
+    });
+
     app.get("/book/:id", async (req, res) => {
       try {
         const id = req.params.id;
@@ -79,38 +88,41 @@ async function connectToMongoDB() {
       }
     });
 
-    app.delete("/book/delete/:id", function (req, res) {
+    app.delete("/book/delete/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const result = bookCollection.deleteOne(query);
-      if (result.deletedCount === 1) {
-        res.status(200).json({ message: "Book deleted successfully." });
+      const data = req.body;
+      const author = data?.user?.user?.email;
+      const book = await bookCollection.findOne(query);
+
+      if (!book) {
+        return res.status(404).json("Book not found");
+      }
+
+      if (book.author !== author) {
+        return res.status(404).json({message:"You are not the author of this book"});
       } else {
-        res
-          .status(404)
-          .json({ message: "Book not found or review not added." });
+        const result = await bookCollection.deleteOne(query);
+        res.status(200).json({ message: "Book deleted successfully" });
       }
     });
 
     app.put("/book/edit/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const updatedBook = req.body.book;
-      const { authorName, title, genre, publicationDate } = updatedBook;
+      const data = req.body;
+      const authorEmail = data?.user?.user?.email;
 
-      try {
+      const { authorName, title, genre, publicationDate } = data?.book?.book;
+      const product = await bookCollection.findOne(query);
+      if (authorEmail === null || authorEmail !== product?.author) {
+        return res.status(400).json("You are not the author of this book");
+      } else {
         const result = await bookCollection.updateOne(query, {
           $set: { authorName, title, genre, publicationDate },
         });
 
-        if (result.modifiedCount === 1) {
-          res.status(200).json({ message: "Book updated successfully." });
-        } else {
-          res.status(404).json({ message: "Book not found or update failed." });
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        res.status(500).json({ message: "Internal server error." });
+        res.status(200).json({ message: "Book updated successfully" });
       }
     });
   } catch (error) {
