@@ -5,7 +5,6 @@ const cors = require("cors");
 require("dotenv").config();
 
 //middleware
-app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 
