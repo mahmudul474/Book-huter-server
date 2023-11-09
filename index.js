@@ -100,7 +100,9 @@ async function connectToMongoDB() {
       }
 
       if (book.author !== author) {
-        return res.status(404).json({message:"You are not the author of this book"});
+        return res
+          .status(404)
+          .json({ message: "You are not the author of this book" });
       } else {
         const result = await bookCollection.deleteOne(query);
         res.status(200).json({ message: "Book deleted successfully" });
