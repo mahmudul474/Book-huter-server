@@ -47,7 +47,7 @@ async function connectToMongoDB() {
           .toArray();
         res.status(200).json(books);
       } catch (error) {
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ error:"server problem " });
       }
     });
 
@@ -123,7 +123,7 @@ async function connectToMongoDB() {
 
       const { authorName, title, genre, publicationDate } = data?.book?.book;
       const product = await bookCollection.findOne(query);
-      if (authorEmail === null || authorEmail !== product?.author) {
+      if ( authorEmail !== product?.author) {
         return res.status(400).json("You are not the author of this book");
       } else {
         const result = await bookCollection.updateOne(query, {
