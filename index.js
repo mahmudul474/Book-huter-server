@@ -20,6 +20,11 @@ const client = new MongoClient(uri);
 async function connectToMongoDB() {
   try {
     await client.connect();
+    app.listen(port, () => {
+      console.log(`Server started on port`, port);
+    });
+
+
     const bookCollection = client.db("book-huter").collection("books");
 
     app.post("/book", async (req, res) => {
@@ -140,6 +145,4 @@ app.get("/", (req, res) => {
   res.send("Welcome assignment 5  frontend!");
 });
 
-app.listen(port, () => {
-  console.log(`Server started on port`, port);
-});
+
